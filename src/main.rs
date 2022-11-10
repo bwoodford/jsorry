@@ -17,8 +17,8 @@ fn main() {
 
     let mut collected = Vec::new();
 
-    for line in file.lines() {
-        collected.append(&mut lex_line(&line.expect("Unable to read line")));
+    for (i, line) in file.lines().enumerate() {
+        collected.append(&mut lex_line(&line.expect("Unable to read line"), i));
     }
 
     let mut level = 0;
@@ -81,8 +81,7 @@ fn print_tab(num: i32) {
     }
 }
 
-
-fn lex_line(line: &str) -> Vec<String>{
+fn lex_line(line: &str, line_num: usize) -> Vec<String>{
 
     let mut iter = line.chars();
     let mut vals = Vec::new();
@@ -96,20 +95,23 @@ fn lex_line(line: &str) -> Vec<String>{
             token = lex_number(&ch, &mut iter)
         } else {
             token = match ch {
-                '=' => String::from("="),
-                '[' => String::from("["),
-                ']' => String::from("]"),
-                '{' => String::from("{"),
-                '}' => String::from("}"),
-                ':' => String::from(":"),
-                ',' => String::from(","),
-                '"' => lex_string(&mut iter),
-                't' | 'f' | 'n' => lex_literal(&ch, &mut iter).expect("Unable to parse string literal"),
-                _ => String::from(" ") 
+                '=' => Ok(String::from("=")),
+                '[' => Ok(String::from("[")),
+                ']' => Ok(String::from("]")),
+                '{' => Ok(String::from("{")),
+                '}' => Ok(String::from("}")),
+                ':' => Ok(String::from(":")),
+                ',' => Ok(String::from(",")),
+                '"' => match lex_string(&mut iter) {
+                    Ok(s) => Ok(s),
+                    Err(e) => panic!("error: {} on line {}", e, line_num)
+                },
+                't' | 'f' | 'n' => lex_literal(&ch, &mut iter),
+                _ => panic!("unknown character encountered on line {}", line_num)
             };
         }
 
-        vals.push(token);
+        vals.push(token.unwrap());
     }
 
     vals
@@ -131,7 +133,7 @@ impl Config {
     }
 }
 
-fn lex_number(pre: &char, chars: &mut std::str::Chars) -> String {
+fn lex_number(pre: &char, chars: &mut std::str::Chars) -> Result<String, &'static str> {
     let mut string = pre.to_string();
 
     for ch in chars.peeking_take_while(|&c| c.is_numeric() 
@@ -143,10 +145,10 @@ fn lex_number(pre: &char, chars: &mut std::str::Chars) -> String {
         string.push(ch)
     }
 
-    string
+    Ok(string)
 }
 
-fn lex_string(chars: &mut std::str::Chars) -> String {
+fn lex_string(chars: &mut std::str::Chars) -> Result<String, &'static str> {
     let mut string = "\"".to_string();
 
     for ch in chars.by_ref() {
@@ -156,7 +158,11 @@ fn lex_string(chars: &mut std::str::Chars) -> String {
         }
     }
 
-    string
+    if !string.ends_with('\"') || string.len() <= 1 {
+        return Err("missing closing \" for string");
+    }
+
+    Ok(string)
 }
 
 fn lex_literal(pre: &char, chars: &mut std::str::Chars) -> Result<String, &'static str> {
@@ -168,8 +174,116 @@ fn lex_literal(pre: &char, chars: &mut std::str::Chars) -> Result<String, &'stat
 
     return match string.as_str() {
         "true" => Ok(String::from("true")),
-        "false" => Ok(String::from("true")),
+        "false" => Ok(String::from("false")),
         "null" => Ok(String::from("null")),
         _ => Err("unexpected literal")
     };
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn ok_lex_literals() {
+        let array = ["true", "false", "null"];
+        let mut chars;
+        let mut pre;
+
+        for item in array.iter() {
+            chars = item.chars();
+            pre = chars.next().unwrap();
+
+            assert_eq!(lex_literal(&pre, &mut chars), Ok(String::from(*item)));
+        }
+    }
+
+    #[test]
+    fn err_lex_literals() {
+        let array = ["talse", "frue", "none"];
+        let mut chars;
+        let mut pre;
+
+        for item in array.iter() {
+            chars = item.chars();
+            pre = chars.next().unwrap();
+
+            assert_eq!(lex_literal(&pre, &mut chars), Err("unexpected literal"));
+        }
+    }
+
+    #[test]
+    fn ok_lex_strings() {
+        let array = [
+            "Woah this is a really good string\"", 
+            "And here's another one\"", 
+            "And the last string\""
+        ];
+        let mut chars;
+
+        for item in array.iter() {
+            chars = item.chars();
+
+            assert_eq!(lex_string(&mut chars), Ok(format!("{}{}", "\"", *item)));
+        }
+    }
+
+    #[test]
+    fn err_lex_strings() {
+        let array = [
+            "Woah this is a really good string", 
+            "And here's another one", 
+            "And the last string"
+        ];
+        let mut chars;
+
+        for item in array.iter() {
+            chars = item.chars();
+
+            assert_eq!(lex_string(&mut chars), Err("missing closing \" for string"));
+        }
+    }
+
+    #[test]
+    // reference: https://www.rfc-editor.org/rfc/rfc8259#section-6
+    fn ok_lex_number() {
+        let array = [
+            "2.023123987491287389471", 
+            "-19729.1010E+10",
+            "2e234", 
+            "2E234", 
+            "+1000",
+            "+1000E-10",
+            "+1000E+10",
+            "-1000E-10",
+        ];
+        let mut chars;
+        let mut pre;
+
+        for item in array.iter() {
+            chars = item.chars();
+            pre = chars.next().unwrap();
+
+            assert_eq!(lex_number(&pre, &mut chars), Ok(String::from(*item)));
+        }
+    }
+
+    #[test]
+    fn err_lex_number() {
+        let array = [
+            "2.0231239 87491287389471", 
+        ];
+        let mut chars;
+        let mut pre;
+
+        for item in array.iter() {
+            chars = item.chars();
+            pre = chars.next().unwrap();
+
+            assert_eq!(lex_number(&pre, &mut chars), Ok(String::from(*item)));
+
+        }
+    }
+     
+
 }
