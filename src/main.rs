@@ -1,4 +1,3 @@
-
 mod tokenizer;
 mod parsizer;
 
@@ -15,10 +14,12 @@ fn main() {
         process::exit(1);
     });
 
-    let contents = FileContents::new(config.file_path);
+    println!("Starting to process {} file", config.file_path);
+    let contents = FileContents::new(config.file_path.clone());
     let tokens = contents.token_iter();
     let mut parser = Parser::new(tokens);
     parser.start();
+    println!("File {} looks good 👍", config.file_path);
 }
 
 struct Config {
