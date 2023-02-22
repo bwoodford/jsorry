@@ -32,7 +32,7 @@ pub mod parser {
         }
 
         fn next_token(&mut self) {
-          println!("Next");
+          
             self.curr = self.peek.clone();
             self.peek = self.lexer.next();
         }
@@ -65,7 +65,7 @@ pub mod parser {
                 panic!("Expected token {:#?} did not match {:#?} | line: {}", 
                        kind, self.curr.as_ref().unwrap().kind, self.curr.as_ref().unwrap().line);
             }
-            println!("{:#?} | line: {} | next: {:#?}", kind, self.curr.as_ref().unwrap().line, self.peek.as_ref().unwrap().kind);
+            
             self.next_token();
         }
 
@@ -78,23 +78,23 @@ pub mod parser {
         }
 
         fn elements(&mut self) {
-            println!("Elements");
+            
             self.element();
 
             if self.is_kind(&JsonKind::ValueSeperator) {
-              println!("Value Seperator ,");
+              
               self.next_token();
               self.elements();
             }
         }
 
         fn element(&mut self) {
-            println!("Element");
+            
             self.whitespace();
 
             if self.is_kind(&JsonKind::BeginObject) {
 
-                println!("Begin object {{");
+                
                 self.next_token();
                 self.whitespace();
 
@@ -104,7 +104,7 @@ pub mod parser {
 
             } else if self.is_kind(&JsonKind::BeginArray) {
                 
-                println!("Begin Array [");
+                
 
                 self.next_token();
                 self.elements();
@@ -116,14 +116,14 @@ pub mod parser {
                       self.is_kind(&JsonKind::False) ||
                       self.is_kind(&JsonKind::Null) {
 
-                println!("String | True | False | Null");
+                
                 self.next_token();
 
             } else if self.is_kind(&JsonKind::Minus) || 
                       self.is_kind(&JsonKind::Digit) || 
                       self.is_kind(&JsonKind::Zero) {
 
-                println!("Number");
+                
                 self.number();
 
             } else {
@@ -135,18 +135,18 @@ pub mod parser {
         }
 
         fn members(&mut self) {
-            println!("Members");
+            
             self.member();
 
             if self.is_kind(&JsonKind::ValueSeperator) {
-              println!("Value Seperator ,");
+              
               self.next_token();
               self.members();
             }
         }
 
         fn member(&mut self) {
-            println!("Member");
+            
             self.whitespace();
             self.must_match(&JsonKind::StringVal);
             self.whitespace();
@@ -155,14 +155,14 @@ pub mod parser {
         }
 
         fn number(&mut self) {
-          println!("Number");
+          
           self.integer();
           self.fraction();
           self.exponent();
         }
 
         fn integer(&mut self) {
-            println!("Integer");
+            
             self.illegal_leading_zero();
 
             if self.is_kind(&JsonKind::Minus) {
