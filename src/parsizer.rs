@@ -2,16 +2,15 @@ pub mod parser {
     
     use crate::tokenizer::tokens::Token;
     use crate::tokenizer::tokens::JsonKind;
-    use crate::tokenizer::tokens::TokenIter;
 
     pub struct Parser<'a> {
-        lexer: TokenIter<'a>,
+        lexer: Box<dyn Iterator<Item=Token> + 'a>,
         curr: Option<Token>,
         peek: Option<Token>
     }
 
     impl<'a> Parser<'a> {
-        pub fn new(lexer: TokenIter) -> Parser {
+        pub fn new(lexer: Box<dyn Iterator<Item=Token> + 'a>) -> Parser {
             let mut tmp = Parser {
                 lexer,
                 curr: None,

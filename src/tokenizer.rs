@@ -2,7 +2,6 @@ pub mod tokens {
     
     use std::str::Chars;
     use std::iter::Peekable;
-    use std::fs;
 
     #[derive(Debug, PartialEq, Eq, Clone)]
     pub enum JsonKind {
@@ -35,16 +34,12 @@ pub mod tokens {
         contents: String,
     }
 
-    impl FileContents {
-        pub fn new(filename: String) -> Self {
-            let contents = fs::read_to_string(&filename).unwrap();
-            FileContents { contents }
-        }
-        pub fn token_iter(&self) -> TokenIter<'_> {
-            TokenIter {
-                chars: self.contents.chars().peekable(),
+    impl<'a> TokenIter<'a> {
+        pub fn new(contents: &'a String) -> Box<dyn Iterator<Item=Token> + 'a>{
+            Box::new(TokenIter {
+                chars: contents.chars().peekable(),
                 curr_line: 1
-            }
+            })
         }
     }
 

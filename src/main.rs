@@ -1,9 +1,8 @@
 mod tokenizer;
 mod parsizer;
 
-use std::env;
-use std::process;
-use crate::tokenizer::tokens::FileContents;
+use std::{env, fs, process};
+use crate::tokenizer::tokens::TokenIter;
 use crate::parsizer::parser::Parser;
 
 fn main() {
@@ -15,8 +14,8 @@ fn main() {
     });
 
     println!("Starting to process {} file", config.file_path);
-    let contents = FileContents::new(config.file_path.clone());
-    let tokens = contents.token_iter();
+    let contents = fs::read_to_string(&config.file_path).unwrap();
+    let tokens = TokenIter::new(&contents);
     let mut parser = Parser::new(tokens);
     parser.start();
     println!("File {} looks good 👍", config.file_path);
