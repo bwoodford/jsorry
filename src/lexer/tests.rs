@@ -2,27 +2,27 @@ use crate::lexer::{TokenIter, Token, JsonKind};
 
 #[test]
 fn test_general_json() {
-    let data = "{
-        \"_id\": \"63f28771280d1dd3925d29ce\",
-        \"index\": 3,
-        \"guid\": \"07fc61f4-bfe7-4ec0-a9d2-413f9f906fd2\",
-        \"isActive\": true,
-        \"latitude\": -64.431585,
-        \"tags\": [
-    \"sit\",
-    \"aute\",
-    \"ea\"
-],
-\"friends\": [
-    {
-        \"id\": 0,
-        \"name\": \"Araceli Shaffer\"
-    },
-    {
-        \"id\": 1,
-        \"name\": \"Glass Hancock\"
-    }
-]
+	let data = "{
+	\"_id\": \"63f28771280d1dd3925d29ce\",
+	\"index\": 3,
+	\"guid\": \"07fc61f4-bfe7-4ec0-a9d2-413f9f906fd2\",
+	\"isActive\": true,
+	\"latitude\": -64.431585,
+	\"tags\": [
+		\"sit\",
+		\"aute\",
+		\"ea\"
+	],
+	\"friends\": [
+		{
+			\"id\": 0,
+			\"name\": \"Araceli Shaffer\"
+		},
+		{
+			\"id\": 1,
+			\"name\": \"Glass Hancock\"
+		}
+	]
 }";
 
 let test_data = vec![
