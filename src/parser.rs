@@ -37,7 +37,7 @@ impl<'a> Parser<'a> {
     fn is_kind(&self, kind: &JsonKind) -> bool {
         match &self.curr {
             None => false,
-            Some(val) => (val.kind == *kind)
+            Some(val) => val.kind == *kind
         }
     }
 
@@ -52,7 +52,7 @@ impl<'a> Parser<'a> {
     fn is_next(&self, kind: &JsonKind) -> bool {
         match &self.peek {
             None => false,
-            Some(val) => (val.kind == *kind)
+            Some(val) => val.kind == *kind
         }
     }
 
