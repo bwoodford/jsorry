@@ -1,8 +1,6 @@
 # Jsorry: Json Parser
 
-Simple recursive decent parser written in rust. This project was created for learning purposes and should not be used for real world use.
-
-The only dependency is itertools, the rest is standard Rust.
+Simple recursive decent parser written in Rust. This project was created for learning purposes and should not be used in a production environment.
 
 ## How to use this project
 
